@@ -266,14 +266,14 @@ class Emogrifier
      *
      * @throws \BadMethodCallException
      */
-    public function emogrify()
+    public function emogrify($ignoreInvalidQueryErrors=false)
     {
         if ($this->html === '') {
             throw new \BadMethodCallException('Please set some HTML first before calling emogrify.', 1390393096);
         }
 
         $xmlDocument = $this->createXmlDocument();
-        $this->process($xmlDocument);
+        $this->process($xmlDocument,$ignoreInvalidQueryErrors);
 
         return $xmlDocument->saveHTML();
     }
@@ -288,14 +288,14 @@ class Emogrifier
      *
      * @throws \BadMethodCallException
      */
-    public function emogrifyBodyContent()
+    public function emogrifyBodyContent($ignoreInvalidQueryErrors=false)
     {
         if ($this->html === '') {
             throw new \BadMethodCallException('Please set some HTML first before calling emogrify.', 1390393096);
         }
 
         $xmlDocument = $this->createXmlDocument();
-        $this->process($xmlDocument);
+        $this->process($xmlDocument,$ignoreInvalidQueryErrors);
 
         $innerDocument = new \DOMDocument();
         foreach ($xmlDocument->documentElement->getElementsByTagName('body')->item(0)->childNodes as $childNode) {
@@ -314,7 +314,7 @@ class Emogrifier
      *
      * @return void
      */
-    protected function process(\DOMDocument $xmlDocument)
+    protected function process(\DOMDocument $xmlDocument,$ignoreInvalidQueryErrors=false)
     {
         $xPath = new \DOMXPath($xmlDocument);
         $this->clearAllCaches();
@@ -350,7 +350,15 @@ class Emogrifier
         $cssRules = $this->parseCssRules($cssParts['css']);
         foreach ($cssRules as $cssRule) {
             // query the body for the xpath selector
-            $nodesMatchingCssSelectors = $xPath->query($this->translateCssToXpath($cssRule['selector']));
+            try{
+                $nodesMatchingCssSelectors = $xPath->query($this->translateCssToXpath($cssRule['selector']));
+            }catch(\Exception $e){
+                if($ignoreInvalidQueryErrors === false){
+                    throw $e;
+                }else{
+                   $nodesMatchingCssSelectors = false; 
+                }
+            }
             // ignore invalid selectors
             if ($nodesMatchingCssSelectors === false) {
                 continue;
