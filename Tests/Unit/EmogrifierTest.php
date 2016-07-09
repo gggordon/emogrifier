@@ -570,6 +570,10 @@ class EmogrifierTest extends \PHPUnit_Framework_TestCase
                 => ['body span {' . $styleRule . '} ', '#<span ' . $styleAttribute . '>#'],
             'child selector P > SPAN matches direct child'
                 => ['p > span {' . $styleRule . '} ', '#<span ' . $styleAttribute . '>#'],
+            'child selector P > SPAN matches direct child without space after >'
+                => ['p >span {' . $styleRule . '} ', '#<span ' . $styleAttribute . '>#'],
+            'child selector P > SPAN matches direct child without space before >'
+                => ['p> span {' . $styleRule . '} ', '#<span ' . $styleAttribute . '>#'],
             'child selector BODY > SPAN does not match grandchild'
                 => ['body > span {' . $styleRule . '} ', '#<span>#'],
             'adjacent selector P + P does not match first P' => ['p + p {' . $styleRule . '} ', '#<p class="p-1">#'],
@@ -592,6 +596,15 @@ class EmogrifierTest extends \PHPUnit_Framework_TestCase
             ],
             'attribute value selector SPAN[title] matches element with matching attribute value' => [
                 'span[title="bonjour"] {' . $styleRule . '} ', '#<span title="bonjour" ' . $styleAttribute . '>#'
+            ],
+            'attribute value selector SPAN[title~] matches element with an attribute value with just that word' => [
+                'span[title~="bonjour"] {' . $styleRule . '} ', '#<span title="bonjour" ' . $styleAttribute . '>#'
+            ],
+            'attribute value selector SPAN[title~] matches element with an attribute value with that word as second of two' => [
+                'span[title~="dias"] {' . $styleRule . '} ', '#<span title="buenas dias" ' . $styleAttribute . '>#'
+            ],
+            'attribute value selector SPAN[title~] matches element with an attribute value with that word as first of two' => [
+                'span[title~="buenas"] {' . $styleRule . '} ', '#<span title="buenas dias" ' . $styleAttribute . '>#'
             ],
             'attribute value selector SPAN[title] does not match element with other attribute value'
                 => ['span[title="bonjour"] {' . $styleRule . '} ', '#<span title="buenas dias">#'],

@@ -7,6 +7,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 ## 1.1.0 (unreleased)
 
 ### Added
+- Support the attr~=value selector
+  ([#323](https://github.com/jjriv/emogrifier/pull/323))
 - Add CSS to HTML attribute mapper
   ([#288](https://github.com/jjriv/emogrifier/pull/288))
 
@@ -25,6 +27,8 @@ This project adheres to [Semantic Versioning](http://semver.org/).
 
 
 ### Fixed
+- Ignore spaces around the > in the direct child selector
+  ([#322](https://github.com/jjriv/emogrifier/pull/322))
 - Ignore empty media queries
   ([#307](https://github.com/jjriv/emogrifier/pull/307))
   ([#237](https://github.com/jjriv/emogrifier/issues/237))
