@@ -187,6 +187,13 @@ class Emogrifier
     private $shouldMapCssToHtml = false;
 
     /**
+     * Determines whether invalid query errors are ignored
+     *
+     * @var bool
+     */
+    private $ignoreInvalidQueryErrors = false;
+
+    /**
      * This multi-level array contains simple mappings of CSS properties to
      * HTML attributes. If a mapping only applies to certain HTML nodes or
      * only for certain values, the mapping is an object with a whitelist
@@ -258,6 +265,10 @@ class Emogrifier
         $this->css = $css;
     }
 
+    public function setIgnoreInvalidQueryErrors($ignore=false){
+        $this->ignoreInvalidQueryErrors = $ignore;
+    }
+
     /**
      * Applies $this->css to $this->html and returns the HTML with the CSS
      * applied.
@@ -268,14 +279,14 @@ class Emogrifier
      *
      * @throws \BadMethodCallException
      */
-    public function emogrify($ignoreInvalidQueryErrors=false)
+    public function emogrify()
     {
         if ($this->html === '') {
             throw new \BadMethodCallException('Please set some HTML first before calling emogrify.', 1390393096);
         }
 
         $xmlDocument = $this->createXmlDocument();
-        $this->process($xmlDocument,$ignoreInvalidQueryErrors);
+        $this->process($xmlDocument);
 
         return $xmlDocument->saveHTML();
     }
@@ -290,14 +301,14 @@ class Emogrifier
      *
      * @throws \BadMethodCallException
      */
-    public function emogrifyBodyContent($ignoreInvalidQueryErrors=false)
+    public function emogrifyBodyContent()
     {
         if ($this->html === '') {
             throw new \BadMethodCallException('Please set some HTML first before calling emogrify.', 1390393096);
         }
 
         $xmlDocument = $this->createXmlDocument();
-        $this->process($xmlDocument,$ignoreInvalidQueryErrors);
+        $this->process($xmlDocument);
 
         $innerDocument = new \DOMDocument();
         foreach ($xmlDocument->documentElement->getElementsByTagName('body')->item(0)->childNodes as $childNode) {
@@ -316,7 +327,7 @@ class Emogrifier
      *
      * @return void
      */
-    protected function process(\DOMDocument $xmlDocument,$ignoreInvalidQueryErrors=false)
+    protected function process(\DOMDocument $xmlDocument)
     {
         $xPath = new \DOMXPath($xmlDocument);
         $this->clearAllCaches();
@@ -355,7 +366,7 @@ class Emogrifier
             try{
                 $nodesMatchingCssSelectors = $xPath->query($this->translateCssToXpath($cssRule['selector']));
             }catch(\Exception $e){
-                if($ignoreInvalidQueryErrors === false){
+                if($this->ignoreInvalidQueryErrors === false){
                     throw $e;
                 }else{
                    $nodesMatchingCssSelectors = false; 
@@ -969,7 +980,15 @@ class Emogrifier
      */
     private function existsMatchForCssSelector(\DOMXPath $xPath, $cssSelector)
     {
-        $nodesMatchingSelector = $xPath->query($this->translateCssToXpath($cssSelector));
+        try{
+            $nodesMatchingSelector = $xPath->query($this->translateCssToXpath($cssSelector));
+        }catch(\Exception $e){
+            if($this->ignoreInvalidQueryErrors === false){
+                throw $e;
+            }else{
+                $nodesMatchingSelector = false; 
+            }
+        }
 
         return $nodesMatchingSelector !== false && $nodesMatchingSelector->length !== 0;
     }
